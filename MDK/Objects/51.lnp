@@ -1,0 +1,8 @@
+".\Objects\STARTUP.obj",
+".\Objects\main.obj",
+".\Objects\timer.obj",
+".\Objects\ds1302.obj",
+".\Objects\iic.obj",
+".\Objects\lcd1602.obj" 
+TO ".\Objects\51" 
+PRINT(".\Listings\51.m51")

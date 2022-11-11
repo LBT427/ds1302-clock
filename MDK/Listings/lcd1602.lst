@@ -1,0 +1,101 @@
+C51 COMPILER V9.60.0.0   LCD1602                                                           11/07/2022 01:48:43 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE LCD1602
+OBJECT MODULE PLACED IN .\Objects\lcd1602.obj
+COMPILER INVOKED BY: D:\keil5\C51\BIN\C51.EXE ..\BSP\LCD\lcd1602.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\BSP\DS1302;..\BSP\
+                    -IIC;..\BSP\LCD;..\BSP\Display;..\USER\timer) DEBUG OBJECTEXTEND PRINT(.\Listings\lcd1602.lst) OBJECT(.\Objects\lcd1602.o
+                    -bj)
+
+line level    source
+
+   1          /*
+   2           * @Author: liubotao
+   3           * @Date: 2022-10-30 15:02:33
+   4           * @LastEditors: liubotao
+   5           * @LastEditTime: 2022-10-31 10:13:44
+   6           * @FilePath: \ds1302-lcd1602\BSP\LCD\lcd1602.c
+   7           * @Description: 
+   8           * 
+   9           */
+  10          #include "lcd1602.h"
+  11          
+  12          void readBusy()           
+  13          {
+  14   1          uint8_t sta;      
+  15   1          LCD1602_DB = 0xff;
+  16   1          LCD1602_RS = 0;
+  17   1          LCD1602_RW = 1;
+  18   1          do
+  19   1          {
+  20   2              LCD1602_EN = 1;
+  21   2              sta = LCD1602_DB;
+  22   2              LCD1602_EN = 0;    
+  23   2          }while(sta & 0x80);
+  24   1      }
+  25          
+  26          void lcd1602WriteCmd(uint8_t cmd)     
+  27          {
+  28   1          readBusy();
+  29   1          LCD1602_RS = 0;
+  30   1          LCD1602_RW = 0;
+  31   1          LCD1602_DB = cmd;
+  32   1          LCD1602_EN = 1;
+  33   1          LCD1602_EN = 0;    
+  34   1      }
+  35          
+  36          void lcd1602WriteData(uint8_t dat)   
+  37          {
+  38   1            readBusy();
+  39   1            LCD1602_RS = 1;
+  40   1            LCD1602_RW = 0;
+  41   1            LCD1602_DB = dat;
+  42   1            LCD1602_EN = 1;
+  43   1            LCD1602_EN = 0;
+  44   1      }
+  45          
+  46          void lcdSetCursor(uint8_t x,uint8_t y)  
+  47          {
+  48   1          uint8_t addr;
+  49   1          if(y == 0)
+  50   1              addr = 0x00 + x;
+  51   1          else
+  52   1              addr = 0x40 + x;
+  53   1          
+C51 COMPILER V9.60.0.0   LCD1602                                                           11/07/2022 01:48:43 PAGE 2   
+
+  54   1          lcd1602WriteCmd(addr|0x80);
+  55   1      }
+  56          
+  57          uint8_t LcdShowStr(uint8_t x,uint8_t y,uint8_t *str)     
+  58          {
+  59   1          lcdSetCursor(x,y);      
+  60   1          while(*str != '\0')
+  61   1          {
+  62   2              lcd1602WriteData(*str++);
+  63   2          }
+  64   1              return 0;
+  65   1      }
+  66          
+  67          uint8_t initLcd1602()              
+  68          {
+  69   1          lcd1602WriteCmd(0x38);    
+  70   1          lcd1602WriteCmd(0x0c);
+  71   1          lcd1602WriteCmd(0x06);
+  72   1          lcd1602WriteCmd(0x01); 
+  73   1              return 0;       
+  74   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    133    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

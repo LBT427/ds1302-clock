@@ -1,0 +1,134 @@
+C51 COMPILER V9.60.0.0   DS1302                                                            11/07/2022 01:48:43 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE DS1302
+OBJECT MODULE PLACED IN .\Objects\ds1302.obj
+COMPILER INVOKED BY: D:\keil5\C51\BIN\C51.EXE ..\BSP\DS1302\ds1302.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\BSP\DS1302;..\BS
+                    -P\IIC;..\BSP\LCD;..\BSP\Display;..\USER\timer) DEBUG OBJECTEXTEND PRINT(.\Listings\ds1302.lst) OBJECT(.\Objects\ds1302.o
+                    -bj)
+
+line level    source
+
+   1          /*
+   2           * @Author: liubotao
+   3           * @Date: 2019-04-10 10:17:14
+   4           * @LastEditors: liubotao
+   5           * @LastEditTime: 2022-11-06 10:45:52
+   6           * @FilePath: \ds1302-lcd1602\BSP\DS1302\ds1302.c
+   7           * @Description: 
+   8           * 
+   9           */
+  10          #include <intrins.h>
+  11          #include "ds1302.h"
+  12          #include "iic.h"
+  13          
+  14          //秒分时日月周年
+  15          uint8_t code READ_RTC_ADDR[7] = {0x81, 0x83, 0x85, 0x87, 0x89, 0x8b, 0x8d}; 
+  16          uint8_t code WRITE_RTC_ADDR[7] = {0x80, 0x82, 0x84, 0x86, 0x88, 0x8a, 0x8c};
+  17          
+  18          //秒分时日月周年
+  19          
+  20          void ds1302Write(uint8_t addr, uint8_t *dat)
+  21          {
+  22   1      //      uint8_t n;
+  23   1              RST = 0;
+  24   1              _nop_();
+  25   1      
+  26   1              SCLK = 0;
+  27   1              _nop_();
+  28   1              RST = 1; 
+  29   1              _nop_();
+  30   1              iicSendByte(addr);
+  31   1              iicSendByte(*dat);
+  32   1       
+  33   1              RST = 0;
+  34   1              _nop_();
+  35   1      }
+  36          
+  37          uint8_t ds1302Read(uint8_t addr,uint8_t *dat)
+  38          {
+  39   1              RST = 0;
+  40   1              _nop_();
+  41   1              SCLK = 0;
+  42   1              _nop_();
+  43   1              RST = 1;
+  44   1              _nop_();
+  45   1              iicSendByte(addr);
+  46   1      
+  47   1              _nop_();
+  48   1              *dat=iicRecByte();
+  49   1      
+  50   1              RST = 0;
+  51   1              _nop_();        
+  52   1              SCLK = 1;
+  53   1              _nop_();
+C51 COMPILER V9.60.0.0   DS1302                                                            11/07/2022 01:48:43 PAGE 2   
+
+  54   1              DSIO = 0;
+  55   1              _nop_();
+  56   1              DSIO = 1;
+  57   1              _nop_();
+  58   1              return dat;     
+  59   1      }
+  60          
+  61          uint8_t ds1302Init(uint8_t *bufer)
+  62          {
+  63   1              uint8_t n;
+  64   1              ds1302Write(0x8E,0X00);
+  65   1              for (n=0; n<7; n++)
+  66   1              {
+  67   2                      ds1302Write(WRITE_RTC_ADDR[n],&bufer[n]);       
+  68   2              }
+  69   1              ds1302Write(0x8E,0x80);
+  70   1              return 0;
+  71   1      }
+  72          
+  73          void ds1302ReadTime(uint8_t *buf)
+  74          {
+  75   1              uint8_t n;
+  76   1              for (n=0; n<7; n++)
+  77   1              {
+  78   2                       ds1302Read(READ_RTC_ADDR[n],&buf[n]);
+  79   2              }
+  80   1                      
+  81   1      }
+  82          void dataPros(uint8_t *buf_s,uint8_t *buf_d)
+  83          {
+  84   1              uint8_t datas[8];
+  85   1              ds1302ReadTime(datas);
+  86   1              buf_s[0] = (datas[2]/16)+0x30;                          //时
+  87   1              buf_s[1] = (datas[2]&0x0f)+0x30;                                 
+  88   1              buf_s[2] = '-';
+  89   1              buf_s[3] = (datas[1]/16)+0x30;                          //分
+  90   1              buf_s[4] = (datas[1]&0x0f)+0x30;        
+  91   1              buf_s[5] = '-';
+  92   1              buf_s[6] = (datas[0]/16)+0x30;                          //秒
+  93   1              buf_s[7] = (datas[0]&0x0f)+0x30;
+  94   1      
+  95   1              buf_d[0] = (datas[6] / 16) + 0x30; //日
+  96   1              buf_d[1] = (datas[6] & 0x0f) + 0x30;
+  97   1              buf_d[2] = '-';
+  98   1              buf_d[3] = (datas[4] / 16) + 0x30; //月
+  99   1              buf_d[4] = (datas[4] & 0x0f) + 0x30;
+ 100   1              buf_d[5] = '-';
+ 101   1              buf_d[6] = (datas[3] / 16) + 0x30; //年
+ 102   1              buf_d[7] = (datas[3] & 0x0f) + 0x30;
+ 103   1      
+ 104   1      }
+ 105          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    411    ----
+   CONSTANT SIZE    =     14    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      28
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+C51 COMPILER V9.60.0.0   DS1302                                                            11/07/2022 01:48:43 PAGE 3   
+
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,1 @@
+"..\USER\main.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(..\BSP\DS1302;..\BSP\IIC;..\BSP\LCD;..\BSP\Display;..\USER\timer) DEBUG OBJECTEXTEND PRINT(.\Listings\main.lst) OBJECT(.\Objects\main.obj)

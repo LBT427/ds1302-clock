@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "lcd1602.h": "c"
+    }
+    "files.exclude": {
+        "仿真": true,
+        "MDK": true,
+    
+    }
+}

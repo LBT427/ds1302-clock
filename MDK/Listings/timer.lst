@@ -1,0 +1,166 @@
+C51 COMPILER V9.60.0.0   TIMER                                                             11/07/2022 02:19:48 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE TIMER
+OBJECT MODULE PLACED IN .\Objects\timer.obj
+COMPILER INVOKED BY: D:\keil5\C51\BIN\C51.EXE ..\USER\timer\timer.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\BSP\DS1302;..\BSP
+                    -\IIC;..\BSP\LCD;..\BSP\Display;..\USER\timer) DEBUG OBJECTEXTEND PRINT(.\Listings\timer.lst) OBJECT(.\Objects\timer.obj)
+
+line level    source
+
+   1          /*
+   2           * @Author: liubotao
+   3           * @Date: 2022-11-05 16:40:34
+   4           * @LastEditors: liubotao
+   5           * @LastEditTime: 2022-11-07 02:16:19
+   6           * @FilePath: \ds1302-lcd1602\USER\timer\timer.c
+   7           * @Description: 
+   8           * 
+   9           */
+  10          #include "timer.h"
+  11          
+  12          #define BCDTODEC(bcd) ((bcd) = (bcd-(bcd>>4)*6))
+  13          #define DECTOBCD(dec) ((dec) = (dec+(dec/10)*6))
+  14          
+  15          unsigned char setTimer(TIMER_T *time,unsigned char modes,unsigned int num)
+  16          {
+  17   1          time->setMode=modes;
+  18   1          time->timeBuffer[modes]=num;
+  19   1              return 0;
+  20   1      }
+  21          unsigned char modeIncident(TIMER_T *time)
+  22          {
+  23   1          unsigned char timBuf[7]={0};
+  24   1          unsigned char num;
+  25   1          time->displayClear();
+  26   1          time->rANDw= ~(time->rANDw);
+  27   1      
+  28   1          if (time->rANDw ==0 )
+  29   1          {
+  30   2              for (num = 0; num < 7; num++)
+  31   2              {
+  32   3                  timBuf[num]=time->timeBuffer[num];
+  33   3                  
+  34   3              }
+  35   2              time->timerWrite(timBuf);  
+  36   2          }
+  37   1          else
+  38   1          {
+  39   2              time->timerRead(timBuf);
+  40   2              for (num = 0; num < 7; num++)
+  41   2              {
+  42   3                  time->timeBuffer[num]=timBuf[num];
+  43   3                  
+  44   3              }
+  45   2          }
+  46   1          return 0;
+  47   1      }
+  48          unsigned char switchIncident(TIMER_T *time)
+  49          {
+  50   1          time->displayClear();
+  51   1          if (time->rANDw!=TIMSHOW)
+  52   1          {
+  53   2              time->setMode++;
+  54   2              if (time->setMode > 5)
+C51 COMPILER V9.60.0.0   TIMER                                                             11/07/2022 02:19:48 PAGE 2   
+
+  55   2              {
+  56   3                  time->setMode=0;
+  57   3              }
+  58   2              
+  59   2          }
+  60   1              return 0;
+  61   1      }
+  62          
+  63          unsigned char addIncident(TIMER_T *time)
+  64          {
+  65   1          unsigned char num1;
+  66   1          if (time->rANDw!=TIMSHOW)
+  67   1          {
+  68   2              num1=time->timeBuffer[time->setMode];
+  69   2              BCDTODEC(num1);
+  70   2              num1++;
+  71   2              if(num1>60)num1=0;
+  72   2              DECTOBCD(num1);
+  73   2              time->timeBuffer[time->setMode]=num1;
+  74   2              time->refreshClock(time);
+  75   2          }
+  76   1              time->displayClear();
+  77   1              return 0;
+  78   1      }
+  79          unsigned char subIncident(TIMER_T *time)
+  80          {
+  81   1          unsigned char num1;
+  82   1          if (time->rANDw!=TIMSHOW)
+  83   1          {
+  84   2              num1=time->timeBuffer[time->setMode];
+  85   2              BCDTODEC(num1);
+  86   2              if(num1>0)num1--;
+  87   2              DECTOBCD(num1);
+  88   2              time->timeBuffer[time->setMode]=num1;
+  89   2              time->refreshClock(time);
+  90   2          }
+  91   1              time->displayClear();
+  92   1              return 0;
+  93   1      }
+  94          
+  95          unsigned char showIncident(TIMER_T *time)
+  96          {
+  97   1          if (time->rANDw==TIMSHOW)
+  98   1          {
+  99   2      
+ 100   2              time->refreshClock(time);
+ 101   2          }
+ 102   1          else
+ 103   1          {
+ 104   2              time->showClock(time);
+ 105   2          }
+ 106   1          if (time->rANDw == 0)
+ 107   1              time->displayWrite(12, 0, "Show");
+ 108   1          if (time->rANDw != 0)
+ 109   1          {
+ 110   2              time->displayWrite(12, 0, "Set");
+ 111   2      
+ 112   2              switch (time->setMode)
+ 113   2              {
+ 114   3              case second:
+ 115   3                  time->displayWrite(11, 1, "second");
+ 116   3                  break;
+C51 COMPILER V9.60.0.0   TIMER                                                             11/07/2022 02:19:48 PAGE 3   
+
+ 117   3              case minute:
+ 118   3                  time->displayWrite(11, 1, "minute");
+ 119   3                  break;
+ 120   3              case hour:
+ 121   3                  time->displayWrite(11, 1, "hour");
+ 122   3                  break;
+ 123   3              case day:
+ 124   3                  time->displayWrite(11, 1, "day");
+ 125   3                  break;
+ 126   3              case month:
+ 127   3                  time->displayWrite(11, 1, "month");
+ 128   3                  break;
+ 129   3              case year:
+ 130   3                  time->displayWrite(11, 1, "year");
+ 131   3                  break;
+ 132   3              default:
+ 133   3                  time->displayWrite(11, 1, "err");
+ 134   3                  break;
+ 135   3              }
+ 136   2          }
+ 137   1              return 0;
+ 138   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    911    ----
+   CONSTANT SIZE    =     54    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      29
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
